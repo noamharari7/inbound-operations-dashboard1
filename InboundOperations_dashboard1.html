@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inbound Operations — Mixtiles</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+:root {
+  --forest:   #3d5a47;
+  --sage:     #8aac96;
+  --sage-l:   #d4e4da;
+  --cream:    #f7f4ef;
+  --cream-d:  #ede8e0;
+  --sand:     #c9bfaf;
+  --white:    #ffffff;
+  --ink:      #1e2820;
+  --ink-m:    #4a5c50;
+  --ink-l:    #7a8c80;
+  --red:      #b94040;
+  --red-bg:   #fdf1f1;
+  --red-b:    #f0cece;
+  --amber:    #a06c1a;
+  --amber-bg: #fdf6e8;
+  --amber-b:  #f0d9a8;
+  --slate:    #556070;
+  --slate-bg: #f0f2f5;
+  --slate-b:  #cdd2db;
+  --green-ok: #2e6b42;
+  --green-bg: #eaf3ee;
+  --green-b:  #b8d9c4;
+  --serif: 'DM Serif Display', Georgia, serif;
+  --sans:  'DM Sans', system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--cream); color: var(--ink); font-family: var(--sans); font-size: 13px; line-height: 1.5; min-height: 100vh; }
+
+/* ── HEADER ── */
+.hdr { background: var(--forest); padding: 0 40px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+.hdr-brand { display: flex; align-items: center; gap: 14px; }
+.hdr-logo { width: 32px; height: 32px; border-radius: 50%; background: var(--sage-l); display: flex; align-items: center; justify-content: center; font-family: var(--serif); font-size: 13px; color: #2c4234; letter-spacing: -.5px; }
+.hdr-title { display: flex; flex-direction: column; gap: 1px; }
+.hdr-name { font-size: 14px; font-weight: 500; color: var(--white); letter-spacing: .1px; }
+.hdr-sub  { font-size: 10px; color: var(--sage); font-weight: 300; letter-spacing: .4px; text-transform: uppercase; }
+.hdr-r { display: flex; align-items: center; gap: 16px; }
+.hdr-date { font-size: 11px; color: var(--sage); }
+.status-pill { display: flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 20px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); font-size: 11px; font-weight: 500; color: var(--white); }
+.pulse { width: 6px; height: 6px; border-radius: 50%; background: #f0b429; animation: pulse 2s infinite; flex-shrink: 0; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ── MAIN ── */
+.main { max-width: 1080px; margin: 0 auto; padding: 32px 40px 60px; }
+
+/* ── KPI CARDS ── */
+.scores { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 36px; }
+.sc { background: var(--white); border: 1px solid var(--cream-d); border-radius: 10px; padding: 18px 20px; }
+.sc-label { font-size: 10px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-l); margin-bottom: 8px; }
+.sc-val { font-family: var(--serif); font-size: 30px; line-height: 1; }
+.sc-val.red   { color: var(--red); }
+.sc-val.amber { color: var(--amber); }
+.sc-val.green { color: var(--green-ok); }
+.sc-val.ink   { color: var(--ink); }
+.sc-sub { font-size: 11px; color: var(--ink-l); margin-top: 5px; line-height: 1.5; }
+
+/* ── SECTION LABEL ── */
+.slbl { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-l); margin-bottom: 10px; margin-top: 32px; display: flex; align-items: center; gap: 8px; }
+.slbl::after { content:''; flex:1; height:1px; background: var(--cream-d); }
+.tier-badge { font-size: 9px; font-weight: 700; padding: 2px 9px; border-radius: 99px; letter-spacing: .04em; flex-shrink: 0; }
+.tier-crit { background: var(--red-bg);   color: var(--red);   border: 1px solid var(--red-b); }
+.tier-attn { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-b); }
+.tier-flag { background: var(--slate-bg); color: var(--slate); border: 1px solid var(--slate-b); }
+
+/* ── EXCEPTION CARDS — white base ── */
+.exc { background: var(--white); border: 1px solid var(--cream-d); border-left: 4px solid var(--cream-d); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+.exc.crit { border-left: 4px solid var(--red); }
+.exc.attn { border-left: 4px solid #d4900a; }
+.exc.flag { border-left: 4px solid var(--slate); }
+.exc-hd { display: flex; align-items: center; cursor: pointer; user-select: none; padding: 15px 18px; gap: 12px; transition: background .15s; }
+.exc-hd:hover { background: var(--cream); }
+.exc-left { flex: 1; min-width: 0; }
+.exc-title { font-size: 13px; font-weight: 500; color: var(--ink); margin-bottom: 3px; }
+.exc-sub   { font-size: 11px; color: var(--ink-l); }
+.exc-tags  { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.tag { font-size: 10px; font-weight: 500; padding: 3px 10px; border-radius: 99px; border: 1px solid; white-space: nowrap; }
+.tag-conf  { background: var(--green-bg); color: var(--green-ok); border-color: var(--green-b); }
+.tag-ass   { background: var(--amber-bg); color: var(--amber);    border-color: var(--amber-b); }
+.tag-calc  { background: var(--slate-bg); color: var(--slate);    border-color: var(--slate-b); }
+.tag-sev-crit { background: var(--red-bg);   color: var(--red);   border-color: var(--red-b); }
+.tag-sev-attn { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-b); }
+.tag-sev-flag { background: var(--slate-bg); color: var(--slate); border-color: var(--slate-b); }
+.tag-divider { width: 1px; height: 14px; background: var(--cream-d); flex-shrink: 0; }
+.chev { font-size: 18px; color: var(--sand); transition: transform .2s; flex-shrink: 0; line-height: 1; }
+.chev.open { transform: rotate(180deg); }
+
+/* ── EXPANDED BODY — color only here ── */
+.exc-body { display: none; }
+.exc-body.open { display: block; }
+.exc-body.open { border-top: 1px solid var(--cream-d); }
+.exc-body-inner { padding: 14px 18px 16px; }
+.meaning-box { border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+.exc.crit .meaning-box { background: var(--red-bg);   border: 1px solid var(--red-b); }
+.exc.attn .meaning-box { background: var(--amber-bg); border: 1px solid var(--amber-b); }
+.exc.flag .meaning-box { background: var(--slate-bg); border: 1px solid var(--slate-b); }
+.meaning-lbl { font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-l); margin-bottom: 6px; }
+.meaning-txt { font-size: 12px; color: var(--ink-m); line-height: 1.75; }
+.meaning-txt strong { color: var(--ink); font-weight: 600; }
+.action-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; color: var(--forest); background: var(--white); border: 1px solid var(--sage); border-radius: 6px; padding: 6px 13px; cursor: pointer; font-family: var(--sans); transition: all .15s; }
+.action-btn:hover { background: var(--sage-l); }
+
+/* ── CONTAINER BARS ── */
+.po-grid { display: flex; flex-direction: column; }
+.po-row { display: flex; align-items: center; gap: 14px; padding: 11px 18px; background: var(--white); border: 1px solid var(--cream-d); margin-top: -1px; }
+.po-grid .po-row:first-child { border-radius: 10px 10px 0 0; }
+.po-grid .po-row:last-child  { border-radius: 0 0 10px 10px; }
+.po-id   { font-size: 11px; font-weight: 600; color: var(--forest); width: 52px; flex-shrink: 0; }
+.po-desc { font-size: 12px; color: var(--ink-m); width: 210px; flex-shrink: 0; }
+.bar-track { flex: 1; background: var(--cream-d); border-radius: 4px; height: 7px; overflow: hidden; position: relative; }
+.bar-fill { height: 7px; border-radius: 4px; }
+.bar-ok  { background: var(--forest); }
+.bar-low { background: #d4900a; }
+.bar-dom { background: var(--slate); opacity: .5; }
+.bar-mark { position: absolute; top: -2px; bottom: -2px; width: 2px; background: rgba(160,108,26,.35); border-radius: 1px; }
+.po-pct { font-size: 11px; font-weight: 600; width: 40px; text-align: right; flex-shrink: 0; }
+.pct-ok  { color: var(--forest); }
+.pct-low { color: var(--amber); }
+.pct-dom { color: var(--slate); }
+.po-flag { font-size: 9px; font-weight: 600; padding: 3px 9px; border-radius: 99px; flex-shrink: 0; }
+.f-ok  { background: var(--green-bg); color: var(--green-ok); border: 1px solid var(--green-b); }
+.f-low { background: var(--amber-bg); color: var(--amber);    border: 1px solid var(--amber-b); }
+.f-dom { background: var(--slate-bg); color: var(--slate);    border: 1px solid var(--slate-b); }
+.threshold-note { font-size: 10px; color: var(--ink-l); margin-top: 8px; padding-left: 2px; }
+
+/* ── FOOTNOTE ── */
+.footnote { margin-top: 44px; padding-top: 20px; border-top: 1px solid var(--cream-d); font-size: 10px; color: var(--sand); text-align: center; line-height: 2; }
+.fn-row { display: flex; justify-content: center; gap: 20px; margin-bottom: 4px; flex-wrap: wrap; }
+.fn-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; padding: 2px 8px; border-radius: 99px; border: 1px solid; }
+
+/* ── CORPORATE THEME ── */
+body.corp {
+  background: #f0f2f5;
+  color: #1a1a2e;
+}
+body.corp .hdr { background: #1a3a6e; }
+body.corp .hdr-name { color: #ffffff; }
+body.corp .hdr-sub { color: #90b4e8; }
+body.corp .hdr-date { color: #90b4e8; }
+body.corp .status-pill { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.2); }
+
+/* COLORED SCORE CARDS */
+body.corp .sc:nth-child(1) { background: #c62828; border-color: #c62828; }
+body.corp .sc:nth-child(1) .sc-label { color: rgba(255,255,255,.75); }
+body.corp .sc:nth-child(1) .sc-val { color: #ffffff; }
+body.corp .sc:nth-child(1) .sc-sub { color: rgba(255,255,255,.7); }
+
+body.corp .sc:nth-child(2) { background: #b45309; border-color: #b45309; }
+body.corp .sc:nth-child(2) .sc-label { color: rgba(255,255,255,.75); }
+body.corp .sc:nth-child(2) .sc-val { color: #ffffff; }
+body.corp .sc:nth-child(2) .sc-sub { color: rgba(255,255,255,.7); }
+
+body.corp .sc:nth-child(3) { background: #1b5e20; border-color: #1b5e20; }
+body.corp .sc:nth-child(3) .sc-label { color: rgba(255,255,255,.75); }
+body.corp .sc:nth-child(3) .sc-val { color: #ffffff; }
+body.corp .sc:nth-child(3) .sc-sub { color: rgba(255,255,255,.7); }
+
+body.corp .sc:nth-child(4) { background: #1a3a6e; border-color: #1a3a6e; }
+body.corp .sc:nth-child(4) .sc-label { color: rgba(255,255,255,.75); }
+body.corp .sc:nth-child(4) .sc-val { color: #ffffff; }
+body.corp .sc:nth-child(4) .sc-sub { color: rgba(255,255,255,.7); }
+
+body.corp .slbl { color: #5f6b7c; }
+body.corp .slbl::after { background: #dde1e7; }
+body.corp .tier-badge.tier-crit { background: #fde8e8; color: #c62828; border-color: #f5c6c6; }
+body.corp .tier-badge.tier-attn { background: #fef3c7; color: #b45309; border-color: #fcd34d; }
+body.corp .tier-badge.tier-flag { background: #dce8f5; color: #0d2b6e; border-color: #7aaad4; }
+
+body.corp .exc { background: #ffffff; border: 1px solid #dde1e7; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+body.corp .exc-hd:hover { background: #f8f9fc; }
+body.corp .exc-title { color: #1a1a2e; }
+body.corp .exc-sub { color: #5f6b7c; }
+
+body.corp .tag-sev-crit { background: #fde8e8; color: #c62828; border-color: #f5c6c6; }
+body.corp .tag-sev-attn { background: #fff3e0; color: #e65100; border-color: #ffcc80; }
+body.corp .tag-sev-flag { background: #ede7f6; color: #6a1b9a; border-color: #ce93d8; }
+body.corp .tag-conf { background: #e8f5e9; color: #1b5e20; border-color: #a5d6a7; }
+body.corp .tag-ass  { background: #fff3e0; color: #e65100; border-color: #ffcc80; }
+body.corp .tag-calc { background: #e3f2fd; color: #1565c0; border-color: #90caf9; }
+
+body.corp .exc { background: #ffffff; border: 1px solid #dde1e7; border-left: 6px solid #dde1e7; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+body.corp .exc.crit { border-left: 6px solid #c62828; }
+body.corp .exc.crit .exc-title { color: #c62828; font-weight: 600; }
+body.corp .exc.crit .exc-sub { color: #5f6b7c; }
+body.corp .exc.crit .tag-sev-crit { background: #fde8e8; color: #c62828; border-color: #f5c6c6; }
+body.corp .exc.crit .meaning-box { background: #fde8e8; border-color: #f5c6c6; }
+body.corp .exc.crit .action-btn { color: #c62828; border-color: #f5c6c6; background: #fff; }
+
+body.corp .exc.attn { border-left: 6px solid #b45309; }
+body.corp .exc.attn .exc-title { color: #b45309; font-weight: 600; }
+body.corp .exc.attn .exc-sub { color: #5f6b7c; }
+body.corp .exc.attn .tag-sev-attn { background: #fef3c7; color: #b45309; border-color: #fcd34d; }
+body.corp .exc.attn .meaning-box { background: #fef3c7; border-color: #fcd34d; }
+body.corp .exc.attn .action-btn { color: #b45309; border-color: #fcd34d; background: #fff; }
+
+body.corp .exc.flag { border-left: 6px solid #0d2b6e; }
+body.corp .exc.flag .exc-title { color: #0d2b6e; font-weight: 600; }
+body.corp .exc.flag .exc-sub { color: #5f6b7c; }
+body.corp .exc.flag .tag-sev-flag { background: #dce8f5; color: #0d2b6e; border-color: #7aaad4; }
+body.corp .exc.flag .meaning-box { background: #dce8f5; border-color: #7aaad4; }
+body.corp .exc.flag .action-btn { color: #0d2b6e; border-color: #7aaad4; background: #fff; }
+
+body.corp .exc-hd:hover { background: #f8f9fc; }
+body.corp .meaning-lbl { color: #5f6b7c; }
+body.corp .meaning-txt { color: #2d3748; }
+body.corp .meaning-txt strong { color: #1a1a2e; }
+
+body.corp .action-btn { color: #1565c0; border-color: #90caf9; background: #ffffff; }
+body.corp .action-btn:hover { background: #e3f2fd; }
+
+body.corp .po-row { background: #ffffff; border-color: #dde1e7; }
+body.corp .bar-track { background: #e8ecf0; }
+body.corp .bar-ok { background: #1565c0; }
+body.corp .pct-ok { color: #1565c0; }
+body.corp .f-ok { background: #e3f2fd; color: #1565c0; border-color: #90caf9; }
+body.corp .f-low { background: #fff3e0; color: #e65100; border-color: #ffcc80; }
+
+body.corp .footnote { border-color: #dde1e7; color: #9aa5b4; }
+body.corp .chev { color: #9aa5b4; }
+
+/* THEME TOGGLE - bottom left */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 20px;
+  padding: 5px 14px;
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 500;
+  color: white;
+  transition: all .2s;
+  user-select: none;
+  white-space: nowrap;
+}
+.theme-toggle:hover { background: rgba(255,255,255,.22); }
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-brand">
+    <div class="hdr-title">
+      <div class="hdr-name">Inbound Operations</div>
+      <div class="hdr-sub">Supply Chain · Internal</div>
+    </div>
+  </div>
+  <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">Switch view</button>
+  <div class="hdr-r">
+    <span class="hdr-date">June 25, 2026</span>
+    <div class="status-pill"><span class="pulse"></span>Needs attention</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- KPI CARDS -->
+  <div class="scores">
+    <div class="sc">
+      <div class="sc-label">Open issues</div>
+      <div class="sc-val red">3</div>
+      <div class="sc-sub">requiring a decision or follow-up</div>
+    </div>
+    <div class="sc">
+      <div class="sc-label">Units at risk</div>
+      <div class="sc-val red">2,730</div>
+      <div class="sc-sub">AES · 1,530 &nbsp;|&nbsp; Welch · 1,200</div>
+    </div>
+    <div class="sc">
+      <div class="sc-label">Lines on track</div>
+      <div class="sc-val green">16 / 23</div>
+      <div class="sc-sub">70% of all inbound lines confirmed on time</div>
+    </div>
+    <div class="sc">
+      <div class="sc-label">Total PO value</div>
+      <div class="sc-val ink">$179,951</div>
+      <div class="sc-sub">5 active purchase orders</div>
+    </div>
+  </div>
+
+  <!-- CRITICAL -->
+  <div class="slbl">Critical <span class="tier-badge tier-crit">Decision needed today</span></div>
+
+  <div class="exc crit">
+    <div class="exc-hd" onclick="tog(this)">
+      <div class="exc-left">
+        <div class="exc-title">AES confirmed 1,530 liner units short — Texas FC at risk</div>
+        <div class="exc-sub">PO-003 · MXT-LNR-AMBR-S · 15% below ordered qty · Arrival Oct 1 · Lead time 14 weeks · Supplier confirmed</div><div class="exc-sub" style="font-size:10px;color:var(--ink-l);margin-top:3px">Owner: Supply Planning &nbsp;|&nbsp; Logged Jun 20, 2026</div>
+      </div>
+      <div class="exc-tags">
+        <span class="tag tag-sev-crit">Critical</span>
+      </div>
+      <span class="chev">&#8964;</span>
+    </div>
+    <div class="exc-body">
+      <div class="exc-body-inner">
+        <div class="meaning-box">
+          <div class="meaning-lbl">What this means for operations</div>
+          <div class="meaning-txt"><strong>1. Shortfall:</strong> AES will ship 8,670 units instead of 10,200 — a confirmed gap of 1,530 small amber liners ($1,607 in value). With 0.9 months on hand and 2.5 months in transit, total coverage is ~3.5 months against a 14-week lead time. <strong>No decision window remaining — act immediately.</strong><br><br><strong>2. Reorder Point crossed:</strong> The shortfall has pushed Total Available (11,730) below the Reorder Point (11,900). A new purchase order for this SKU must be placed now — independent of the shortfall resolution.</div>
+        </div>
+        <button class="action-btn">Decision needed: reorder or find alternative? &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ATTENTION -->
+  <div class="slbl">Attention <span class="tier-badge tier-attn">Monitor this week</span></div>
+
+  <div class="exc attn">
+    <div class="exc-hd" onclick="tog(this)">
+      <div class="exc-left">
+        <div class="exc-title">Edelman: 2 SKUs delayed 1 week to Cal Coast Orchids</div>
+        <div class="exc-sub">PO-002 · MXT-POT-AMBR-1003-S &amp; AMBR-1006-M · Ship date Jul 16 → Jul 23 · Delivery Sep 24 → Oct 1 · Supplier confirmed</div><div class="exc-sub" style="font-size:10px;color:var(--ink-l);margin-top:3px">Owner: Customer Operations &nbsp;|&nbsp; Logged Jun 20, 2026</div>
+      </div>
+      <div class="exc-tags">
+        <span class="tag tag-sev-attn">Attention</span>
+      </div>
+      <span class="chev">&#8964;</span>
+    </div>
+    <div class="exc-body">
+      <div class="exc-body-inner">
+        <div class="meaning-box">
+          <div class="meaning-lbl">What this means for operations</div>
+          <div class="meaning-txt">Both SKUs have exactly 1.0 months of stock on hand — no buffer. Delivery slips from Sep 24 to Oct 1. <strong>Cal Coast Orchids must be notified immediately</strong> to confirm whether this affects their fulfillment commitments. Zero margin for any further delay on these lines.</div>
+        </div>
+        <button class="action-btn">Notify Cal Coast Orchids &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="exc attn">
+    <div class="exc-hd" onclick="tog(this)">
+      <div class="exc-left">
+        <div class="exc-title">Welch Packaging: 1,200 units short on delivery — Texas FC</div>
+        <div class="exc-sub">PO-005 · 4 packaging SKUs received short · Breakdown by SKU not yet confirmed by supplier</div><div class="exc-sub" style="font-size:10px;color:var(--ink-l);margin-top:3px">Owner: Procurement &nbsp;|&nbsp; Logged Jun 20, 2026</div>
+      </div>
+      <div class="exc-tags">
+        <span class="tag tag-sev-attn">Attention</span>
+      </div>
+      <span class="chev">&#8964;</span>
+    </div>
+    <div class="exc-body">
+      <div class="exc-body-inner">
+        <div class="meaning-box">
+          <div class="meaning-lbl">What this means for operations</div>
+          <div class="meaning-txt">Welch delivered 1,200 fewer packaging units than ordered but did not specify which SKUs were affected. The 300 per SKU split is an operational assumption — <strong>no reorder decision should be made until the actual breakdown is confirmed with Welch.</strong> MXT-SHIP-SHORT-S has the lowest remaining stock coverage and is most at risk.</div>
+        </div>
+        <button class="action-btn">Confirm SKU breakdown with Welch &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="exc attn">
+    <div class="exc-hd" onclick="tog(this)">
+      <div class="exc-left">
+        <div class="exc-title">AES containers below 60% efficiency threshold — PO-003 &amp; PO-004</div>
+        <div class="exc-sub">PO-003 Texas FC: 57.1% · PO-004 Cal Coast Orchids: 40.5% · International shipments · Based on ordered qty · Consolidation may reduce freight cost</div><div class="exc-sub" style="font-size:10px;color:var(--ink-l);margin-top:3px">Owner: Procurement &nbsp;|&nbsp; Logged Jun 20, 2026</div>
+      </div>
+      <div class="exc-tags">
+        <span class="tag tag-sev-attn">Attention</span>
+      </div>
+      <span class="chev">&#8964;</span>
+    </div>
+    <div class="exc-body">
+      <div class="exc-body-inner">
+        <div class="meaning-box">
+          <div class="meaning-lbl">What this means for operations</div>
+          <div class="meaning-txt">Both AES containers are below the 60% efficiency threshold. Consolidating into a single container could reduce freight cost — requires coordinating shipment timing for both destinations. Figures based on ordered qty; actual utilization may differ after confirmed shortfalls.</div>
+        <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:12px;font-size:11px;">
+            <span style="width:80px;color:var(--ink-m);font-weight:500;flex-shrink:0">PO-003 · Texas FC</span>
+            <div style="flex:1;background:rgba(255,255,255,.5);border-radius:4px;height:7px;overflow:hidden;position:relative">
+              <div style="height:7px;border-radius:4px;background:#d4900a;width:57.1%"></div>
+              <div style="position:absolute;top:-2px;bottom:-2px;left:60%;width:2px;background:rgba(160,108,26,.4);border-radius:1px"></div>
+            </div>
+            <span style="color:#a06c1a;font-weight:600;width:36px;text-align:right;flex-shrink:0">57.1%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;font-size:11px;">
+            <span style="width:80px;color:var(--ink-m);font-weight:500;flex-shrink:0">PO-004 · Cal Coast</span>
+            <div style="flex:1;background:rgba(255,255,255,.5);border-radius:4px;height:7px;overflow:hidden;position:relative">
+              <div style="height:7px;border-radius:4px;background:#d4900a;width:40.5%"></div>
+              <div style="position:absolute;top:-2px;bottom:-2px;left:60%;width:2px;background:rgba(160,108,26,.4);border-radius:1px"></div>
+            </div>
+            <span style="color:#a06c1a;font-weight:600;width:36px;text-align:right;flex-shrink:0">40.5%</span>
+          </div>
+          <div style="font-size:10px;color:var(--ink-l);margin-top:2px">Vertical mark = 60% threshold</div>
+        </div>
+        </div>
+        <button class="action-btn">Explore consolidation with AES &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA FLAGS -->
+  <div class="slbl">Data flags <span class="tier-badge tier-flag">Verify before acting</span></div>
+
+  <div class="exc flag">
+    <div class="exc-hd" onclick="tog(this)">
+      <div class="exc-left">
+        <div class="exc-title">MXT-LNR-AMBR-M: units-per-pallet missing in source data — assumed 600</div>
+        <div class="exc-sub">Appears twice in source · Second entry blank · Pallet &amp; container figures may be inaccurate</div><div class="exc-sub" style="font-size:10px;color:var(--ink-l);margin-top:3px">Owner: Supplier Management &nbsp;|&nbsp; Logged Jun 20, 2026</div>
+      </div>
+      <div class="exc-tags">
+        <span class="tag tag-sev-flag">Pending confirmation</span>
+      </div>
+      <span class="chev">&#8964;</span>
+    </div>
+    <div class="exc-body">
+      <div class="exc-body-inner">
+        <div class="meaning-box">
+          <div class="meaning-lbl">Risk</div>
+          <div class="meaning-txt">If the actual units-per-pallet differs from 600, pallet counts and container utilization for PO-003 and PO-004 will both be wrong — affecting freight cost estimates and logistics planning. <strong>Confirm with AES before the next order cycle.</strong></div>
+        </div>
+        <button class="action-btn">Confirm with AES &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="exc flag">
+    <div class="exc-hd" onclick="tog(this)">
+      <div class="exc-left">
+        <div class="exc-title">MXT-POT-AMBR-1002-S: duplicate SKU — two colorways share one code</div>
+        <div class="exc-sub">Calm Rose (180 units/pallet) and Red (240 units/pallet) · Different pallet densities · Fulfillment error risk</div><div class="exc-sub" style="font-size:10px;color:var(--ink-l);margin-top:3px">Owner: Supplier Management &nbsp;|&nbsp; Logged Jun 20, 2026</div>
+      </div>
+      <div class="exc-tags">
+        <span class="tag tag-sev-flag">Pending confirmation</span>
+      </div>
+      <span class="chev">&#8964;</span>
+    </div>
+    <div class="exc-body">
+      <div class="exc-body-inner">
+        <div class="meaning-box">
+          <div class="meaning-lbl">Risk</div>
+          <div class="meaning-txt">Two distinct products sharing one SKU code creates picking and fulfillment errors at the warehouse level. The different pallet densities (180 vs 240) also make any aggregated calculation for this SKU unreliable. <strong>Edelman must assign separate SKU codes before the next shipment.</strong></div>
+        </div>
+        <button class="action-btn">Request SKU correction from Edelman &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="exc flag">
+    <div class="exc-hd" onclick="tog(this)">
+      <div class="exc-left">
+        <div class="exc-title">Welch shortfall by SKU unconfirmed — reorder on hold</div>
+        <div class="exc-sub">1,200 units short total · Which SKUs were affected not specified by supplier · All figures assumed equal</div><div class="exc-sub" style="font-size:10px;color:var(--ink-l);margin-top:3px">Owner: Procurement &nbsp;|&nbsp; Logged Jun 20, 2026</div>
+      </div>
+      <div class="exc-tags">
+        <span class="tag tag-sev-flag">Pending confirmation</span>
+      </div>
+      <span class="chev">&#8964;</span>
+    </div>
+    <div class="exc-body">
+      <div class="exc-body-inner">
+        <div class="meaning-box">
+          <div class="meaning-lbl">Risk</div>
+          <div class="meaning-txt">Until Welch confirms the actual per-SKU breakdown, stock coverage and reorder calculations for all 4 packaging SKUs are unreliable. MXT-SHIP-SHORT-S is most at risk given its lower coverage. <strong>Do not place any supplementary packaging order before the actual split is confirmed.</strong></div>
+        </div>
+        <button class="action-btn">Request breakdown from Welch &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- FOOTNOTE -->
+  <div class="footnote">
+    <div class="fn-row">
+      <span class="fn-tag" style="background:var(--red-bg);color:var(--red);border-color:var(--red-b)">Critical — decision needed today</span>
+      <span class="fn-tag" style="background:var(--amber-bg);color:var(--amber);border-color:var(--amber-b)">Attention — monitor this week</span>
+      <span class="fn-tag" style="background:var(--slate-bg);color:var(--slate);border-color:var(--slate-b)">Pending confirmation — verify before acting</span>
+    </div>
+    MVP · Static snapshot · June 25, 2026 · In production, values feed live from ERP · Action buttons trigger workflow notifications to the relevant owner
+  </div>
+
+</div>
+
+<script>
+function tog(el) {
+  const body = el.nextElementSibling;
+  const chev = el.querySelector('.chev');
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chev.classList.toggle('open', !isOpen);
+}
+</script>
+
+<script>
+function toggleTheme() {
+  document.body.classList.toggle('corp');
+}
+</script>
+</body>
+</html>
